@@ -1,27 +1,20 @@
 package ub.bigdata.m2gl;
 
-import java.io.IOException;
-
+import java.awt.image.BufferedImage;
+import java.io.File;
+import javax.imageio.ImageIO;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.ConnectionFactory;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.util.ToolRunner;
-
-import ub.bigdata.m2gl.HBaseLink.HBaseProg;
 
 @Path("/")
 public class TileResource {
+	
+	private static BufferedImage noimg;
 	
 	@GET
 	@Path("tile/{z}/{x}/{y}")
@@ -33,10 +26,18 @@ public class TileResource {
 		String row = z + "/" + x + "/" + y;
 		res = HBaseLink.HBaseProg.get(row);
 		//res = get(row);
-		if (res != null) 
+		if (res != null) {
 			return Response.ok(res).build();
-		else 
-			return Response.status(Status.NOT_FOUND).build();
+		}
+		else {
+			//return Response.status(Status.NOT_FOUND).build();
+			if (noimg == null) {
+				ClassLoader cl = getClass().getClassLoader();
+				File f = new File(cl.getResource("no.png").getFile());
+				noimg = ImageIO.read(f);
+			}
+			return Response.ok(noimg).build();
+		}
     }
 	
 }
